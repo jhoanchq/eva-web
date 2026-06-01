@@ -1,0 +1,248 @@
+# 🚀 Evaluación y Control de Servicios Web — Semana 10
+
+> **Tema:** Servicios de Transferencia de Archivos  
+> **Framework:** Laravel 11 + Sanctum (API REST)  
+> **Docente:** Jhoan Benito Chite Quispe  
+> **Período:** 2026-I
+
+---
+
+## 📋 Requisitos
+
+| Herramienta | Versión | Ruta en Laragon |
+|-------------|---------|-----------------|
+| PHP | ≥ 8.2 | `C:\laragon\bin\php\php-8.2.30-Win32-vs16-x64` |
+| Composer | ≥ 2.5 | `C:\laragon\bin\composer\composer.phar` |
+| MySQL | ≥ 8.0 | `C:\laragon\bin\mysql\mysql-8.0.30-winx64` |
+| Node.js | ≥ 18 | (opcional, para Vite) |
+
+---
+
+## 🛠️ Instalación paso a paso
+
+### 1. Clonar el repositorio
+
+```bash
+cd C:\laragon\www
+git clone https://github.com/jhoanchq/eva-web.git
+cd eva-web
+```
+
+### 2. Instalar dependencias PHP
+
+```bash
+composer install
+```
+
+### 3. Configurar entorno
+
+```bash
+cp .env.example .env
+```
+
+Editar `.env` con tus datos:
+
+```env
+APP_NAME="Evaluación Web"
+APP_ENV=local
+APP_URL=http://eva-web.test
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=eva_web
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+### 4. Generar key de la aplicación
+
+```bash
+php artisan key:generate
+```
+
+### 5. Crear la base de datos
+
+```bash
+mysql -u root -e "CREATE DATABASE IF NOT EXISTS eva_web CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+```
+
+### 6. Ejecutar migraciones
+
+```bash
+php artisan migrate
+```
+
+### 7. Instalar Sanctum (API tokens)
+
+```bash
+php artisan install:api
+```
+
+### 8. Crear enlace simbólico para uploads
+
+```bash
+php artisan storage:link
+```
+
+### 9. (Opcional) Crear usuario de prueba
+
+```bash
+php artisan tinker
+```
+
+```php
+\App\Models\User::factory()->create([
+    'name' => 'Juan Perez',
+    'email' => 'juan@test.com',
+    'password' => bcrypt('password'),
+]);
+```
+
+---
+
+## 🚀 Cómo usar
+
+### Iniciar servidor de desarrollo
+
+```bash
+php artisan serve
+# Abrir: http://127.0.0.1:8000
+```
+
+O desde **Laragon**: inicia Laragon y abre `http://eva-web.test`
+
+### Flujo del estudiante
+
+```
+Portada educativa  →  Registro/Login  →  Obtener Token  →  Demo Upload
+   ┌──────────┐       ┌──────────┐       ┌──────────┐       ┌──────────┐
+   │  GET /   │   →   │ /demo/auth│   →   │ Obtener  │   →   │/demo/    │
+   │          │       │           │       │ Token    │       │ upload   │
+   └──────────┘       └──────────┘       └──────────┘       └──────────┘
+```
+
+### 1. Portada educativa
+
+**`GET /`** — Explica el flujo de transferencia de archivos, protocolos (FTP, SFTP, HTTP Upload), validaciones del lado servidor y enlaces al demo.
+
+### 2. Registrarse o iniciar sesión
+
+**`GET /demo/auth`** — Interfaz para:
+
+| Acción | Método | Endpoint | Body |
+|--------|--------|----------|------|
+| **Registrarse** | `POST` | `/api/register` | `{ name, email, password, password_confirmation }` |
+| **Iniciar sesión** | `POST` | `/api/login` | `{ email, password }` |
+
+Ambos devuelven un **token de API** (Sanctum). Cópialo.
+
+### 3. Demo interactivo de upload
+
+**`GET /demo/upload`** — Pega el token y sube una imagen:
+
+1. Arrastra una imagen o haz clic para seleccionar
+2. El demo valida: tipo MIME, tamaño, dimensiones
+3. Envía al servidor con el token en el header
+4. Muestra la respuesta: URL, checksum SHA-256
+
+---
+
+## 📡 API REST
+
+### Endpoints públicos
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `POST` | `/api/register` | Crear cuenta (name, email, password, password_confirmation) |
+| `POST` | `/api/login` | Iniciar sesión (email, password) → devuelve token |
+| `GET` | `/api/avatar/{id}` | Obtener URL del avatar de un usuario |
+
+### Endpoints protegidos (requieren `Authorization: Bearer {token}`)
+
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `POST` | `/api/avatar` | Subir avatar (multipart: campo `avatar`) |
+| `DELETE` | `/api/avatar` | Eliminar avatar |
+| `POST` | `/api/logout` | Cerrar sesión (elimina token) |
+| `GET` | `/api/user` | Datos del usuario autenticado |
+
+### Probar con Postman
+
+Importa el archivo: `presentacion-s10/demo/Postman_Collection.json`
+
+1. Configura `base_url` = `http://eva-web.test`
+2. Configura `token` con el token obtenido en `/demo/auth`
+
+---
+
+## 📁 Estructura del proyecto
+
+```
+eva-web/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Api/
+│   │   │   │   └── AvatarController.php   ← CRUD de avatar
+│   │   │   └── Auth/
+│   │   │       └── ApiAuthController.php   ← Registro/Login/Logout
+│   │   └── ...
+│   └── Models/
+│       └── User.php                        ← +HasApiTokens, +avatar_url
+├── database/
+│   └── migrations/
+│       └── ...add_avatar_url_to_users.php  ← Migración avatar_url
+├── resources/
+│   └── views/
+│       ├── welcome.blade.php               ← Portada educativa
+│       └── demo/
+│           ├── upload.blade.php             ← Demo interactivo
+│           └── auth.blade.php               ← Login/Registro
+├── routes/
+│   ├── api.php                             ← Rutas API
+│   └── web.php                             ← Rutas web
+├── storage/
+│   └── app/public/avatars/                 ← Uploads de avatar
+└── .env                                    ← Configuración local
+```
+
+---
+
+## 🧪 Validaciones implementadas
+
+| Validación | Dónde | Método |
+|-----------|-------|--------|
+| Tipo MIME real | Servidor (AvatarController) | `getimagesize()` + `mimes` rule |
+| Tamaño máximo | Servidor | `max:2048` (2MB) |
+| Dimensiones mín/máx | Servidor | Closure: 100×100 a 1024×1024 px |
+| Integridad SHA-256 | Servidor | `hash_file('sha256', ...)` |
+| Nombre seguro UUID | Servidor | `Str::uuid()` evita colisiones |
+| Validación previa | Cliente (JS) | Tipo MIME + tamaño + dimensiones |
+
+---
+
+## 🔐 Seguridad
+
+- **Autenticación:** Laravel Sanctum (tokens bearer)
+- **Almacenamiento:** Nombres UUID (evita path traversal)
+- **Cifrado:** Usar HTTPS en producción (TLS)
+- **Autorización:** Políticas por usuario (cada quien su propio avatar)
+- **Limpieza:** Se elimina avatar anterior al subir uno nuevo
+
+---
+
+## 📚 Recursos adicionales
+
+| Recurso | Enlace |
+|---------|--------|
+| Presentación reveal.js | `presentacion-s10/index.html` |
+| Demos PHP/Laravel/Postman | `presentacion-s10/demo/` |
+| Documentación Laravel 11 | https://laravel.com/docs/11.x |
+| Postman | https://learning.postman.com/ |
+| OWASP File Upload | https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload |
+
+---
+
+## 📝 Licencia
+
+Proyecto educativo — IESTP Jorge Basadre — Administración de Plataformas y Servicios Web

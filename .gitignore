@@ -1,0 +1,14 @@
+/vendor/
+/node_modules/
+/.env
+/.idea/
+/.vscode/
+/storage/framework/*
+/storage/logs/*
+/storage/debugbar/*
+!storage/framework/.gitignore
+!storage/logs/.gitignore
+.DS_Store
+Thumbs.db
+*.log
+*.sqlite
