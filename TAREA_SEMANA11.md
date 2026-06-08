@@ -136,7 +136,8 @@ Responde brevemente:
 - Descarga la **Plantilla_Pruebas.docx** desde el siguiente enlace y complétala:  
   🔗 https://presentaciones.apsw.jcspe.com/ecsw/semana11/Plantilla_Pruebas.docx
 - Incluye capturas de pantalla de Postman como evidencia (al menos 3)
-- Sube el documento completado a **Classroom** o entrégalo impreso según indicación del docente
+- Sube el documento completado al **aula virtual (Moodle)**:  
+  🔗 https://moodle.plataformasvirtuales.pe/jorgebasadre
 
 ---
 
