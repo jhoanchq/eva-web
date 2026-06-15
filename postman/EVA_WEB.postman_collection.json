@@ -1,0 +1,237 @@
+{
+  "info": {
+    "name": "EVA-WEB — API de Avatar",
+    "description": "Colección de pruebas para el API de avatar del curso Evaluación y Control de Servicios Web.\n\n## Flujo recomendado\n1. Registrarse (register) → obtienes token\n2. Login (login) → script guarda token automáticamente\n3. Subir avatar (upload)\n4. Consultar avatar (show)\n5. Eliminar avatar (destroy)\n6. Cerrar sesión (logout)\n\nVariables:\n- {{base_url}}: http://eva-web.test\n- {{token}}: se llena automáticamente al hacer login",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://eva-web.test" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Registrarse",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    var json = pm.response.json();",
+              "    pm.collectionVariables.set('token', json.token);",
+              "    console.log('Token guardado:', json.token);",
+              "    pm.test('Usuario registrado y token obtenido', function() {",
+              "        pm.expect(json.token).to.not.be.empty;",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json", "type": "text" },
+          { "key": "Accept", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"name\": \"Juan Perez\",\n    \"email\": \"juan@test.com\",\n    \"password\": \"123456\",\n    \"password_confirmation\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/register",
+          "host": ["{{base_url}}"],
+          "path": ["api", "register"]
+        },
+        "description": "Crea un nuevo usuario y devuelve un token de API.\n\nBody (JSON):\n- name: obligatorio\n- email: obligatorio, único\n- password: mínimo 6 caracteres\n- password_confirmation: debe coincidir con password"
+      }
+    },
+    {
+      "name": "2. Iniciar sesión",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var json = pm.response.json();",
+              "    pm.collectionVariables.set('token', json.token);",
+              "    console.log('Token guardado:', json.token);",
+              "    pm.test('Login exitoso y token almacenado', function() {",
+              "        pm.expect(json.token).to.not.be.empty;",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json", "type": "text" },
+          { "key": "Accept", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"juan@test.com\",\n    \"password\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/login",
+          "host": ["{{base_url}}"],
+          "path": ["api", "login"]
+        },
+        "description": "Autentica un usuario existente y devuelve un token.\n\nEl script de test guarda automáticamente el token en la variable {{token}}."
+      }
+    },
+    {
+      "name": "3. Subir avatar",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Respuesta 201 - Archivo subido', function() {",
+              "    pm.response.to.have.status(201);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.data).to.have.property('url');",
+              "    pm.expect(json.data).to.have.property('checksum');",
+              "    pm.expect(json.data.mime).to.match(/^(image\\/)/);",
+              "    console.log('URL:', json.data.url);",
+              "    console.log('SHA-256:', json.data.checksum);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "Accept", "value": "application/json", "type": "text" }
+        ],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "avatar",
+              "type": "file",
+              "src": "",
+              "description": "Archivo de imagen (JPG, PNG o WEBP, máximo 2MB)"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{base_url}}/api/avatar",
+          "host": ["{{base_url}}"],
+          "path": ["api", "avatar"]
+        },
+        "description": "Sube un avatar usando multipart/form-data.\n\nRequiere:\n- Header: Authorization: Bearer {{token}}\n- Body: form-data → campo \"avatar\" de tipo File\n\nValidaciones del servidor:\n- Tipo MIME: image/jpeg, image/png, image/webp\n- Tamaño: máximo 2MB\n- Dimensiones: 100×100px mínimo, 1024×1024px máximo\n- Almacenamiento: nombre UUID único"
+      }
+    },
+    {
+      "name": "4. Obtener avatar",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/avatar/1",
+          "host": ["{{base_url}}"],
+          "path": ["api", "avatar", "1"]
+        },
+        "description": "Obtiene la URL del avatar de un usuario por su ID.\n\nEndpoints públicos (no requiere token).\n- Si el usuario tiene avatar → 200 + URL\n- Si no tiene avatar → 404"
+      }
+    },
+    {
+      "name": "5. Eliminar avatar",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Respuesta 200 - Avatar eliminado', function() {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json.message).to.eql('Avatar eliminado correctamente');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "Accept", "value": "application/json", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/avatar",
+          "host": ["{{base_url}}"],
+          "path": ["api", "avatar"]
+        },
+        "description": "Elimina el avatar del usuario autenticado.\n\nRequiere header Authorization: Bearer {{token}}"
+      }
+    },
+    {
+      "name": "6. Cerrar sesión",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Respuesta 200 - Sesión cerrada', function() {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "Accept", "value": "application/json", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/logout",
+          "host": ["{{base_url}}"],
+          "path": ["api", "logout"]
+        },
+        "description": "Cierra la sesión eliminando el token actual."
+      }
+    },
+    {
+      "name": "7. Datos del usuario",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Respuesta 200 - Datos del usuario', function() {",
+              "    pm.response.to.have.status(200);",
+              "    var json = pm.response.json();",
+              "    pm.expect(json).to.have.property('id');",
+              "    pm.expect(json).to.have.property('email');",
+              "    pm.expect(json).to.have.property('name');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+          { "key": "Accept", "value": "application/json", "type": "text" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/user",
+          "host": ["{{base_url}}"],
+          "path": ["api", "user"]
+        },
+        "description": "Obtiene los datos del usuario autenticado.\n\nRequiere header Authorization: Bearer {{token}}"
+      }
+    }
+  ]
+}

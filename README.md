@@ -168,10 +168,87 @@ Ambos devuelven un **token de API** (Sanctum). Cópialo.
 
 ### Probar con Postman
 
-Importa el archivo: `presentacion-s10/demo/Postman_Collection.json`
+Importa la colección desde [`postman/EVA_WEB.postman_collection.json`](postman/EVA_WEB.postman_collection.json)
 
-1. Configura `base_url` = `http://eva-web.test`
-2. Configura `token` con el token obtenido en `/demo/auth`
+**Variables de colección:**
+
+| Variable | Valor | Descripción |
+|----------|-------|-------------|
+| `base_url` | `http://eva-web.test` | URL del servidor |
+| `token` | *(se llena automáticamente)* | Token de API |
+
+**Flujo recomendado — ejecutar en orden:**
+
+#### Paso 1 — Registrarse
+```
+POST {{base_url}}/api/register
+Content-Type: application/json
+
+{
+    "name": "Juan Perez",
+    "email": "juan@test.com",
+    "password": "123456",
+    "password_confirmation": "123456"
+}
+```
+> ✅ Respuesta: `201` — devuelve el usuario creado + token
+
+#### Paso 2 — Iniciar sesión
+```
+POST {{base_url}}/api/login
+Content-Type: application/json
+
+{
+    "email": "juan@test.com",
+    "password": "123456"
+}
+```
+> ✅ Respuesta: `200` — el **script guarda el token automáticamente** en `{{token}}`
+> 
+> A partir de acá las requests protegidas usarán `Authorization: Bearer {{token}}`
+
+#### Paso 3 — Subir avatar
+```
+POST {{base_url}}/api/avatar
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data
+
+Body → form-data:
+    avatar: (File) foto.jpg
+```
+> ✅ Respuesta: `201`
+> ```json
+> {
+>   "message": "Avatar actualizado correctamente",
+>   "data": {
+>     "url": "/storage/avatars/uuid.jpg",
+>     "tamano": 512000,
+>     "mime": "image/jpeg",
+>     "checksum": "a3f2b8c1..."
+>   }
+> }
+> ```
+
+#### Paso 4 — Consultar avatar
+```
+GET {{base_url}}/api/avatar/1
+```
+> ✅ Respuesta: `200` con URL del avatar
+> ❌ Respuesta si no existe: `404`
+
+#### Paso 5 — Eliminar avatar
+```
+DELETE {{base_url}}/api/avatar
+Authorization: Bearer {{token}}
+```
+> ✅ Respuesta: `200` — `{"message": "Avatar eliminado correctamente"}`
+
+#### Paso 6 — Cerrar sesión
+```
+POST {{base_url}}/api/logout
+Authorization: Bearer {{token}}
+```
+> ✅ Respuesta: `200`
 
 ---
 
@@ -201,6 +278,8 @@ eva-web/
 ├── routes/
 │   ├── api.php                             ← Rutas API
 │   └── web.php                             ← Rutas web
+├── postman/
+│   └── EVA_WEB.postman_collection.json     ← Colección Postman
 ├── storage/
 │   └── app/public/avatars/                 ← Uploads de avatar
 └── .env                                    ← Configuración local
