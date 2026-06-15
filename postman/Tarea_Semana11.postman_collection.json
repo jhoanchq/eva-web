@@ -1,0 +1,233 @@
+{
+  "info": {
+    "name": "EVA-WEB — Tarea Semana 11",
+    "description": "Batería de 10 casos de prueba para la Tarea Semana 11.\n\nEndpoint: API de avatar (POST /api/avatar, GET /api/avatar/{id}, DELETE /api/avatar)\n\n## Instrucciones\n1. Configurar variable base_url = http://eva-web.test\n2. Obtener token con la request \"Obtener token (login)\"\n3. Ejecutar los 10 casos en orden\n4. Completar Plantilla_Pruebas.docx con los resultados\n\nScript de test incluido en cada caso para validación automática.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://eva-web.test" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "🔑 Obtener token (login)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    var json = pm.response.json();",
+              "    pm.collectionVariables.set('token', json.token);",
+              "    console.log('Token guardado:', json.token);",
+              "    pm.test('Token obtenido exitosamente', () => {",
+              "        pm.expect(json.token).to.not.be.empty;",
+              "    });",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"juan@test.com\",\n    \"password\": \"123456\"\n}"
+        },
+        "url": { "raw": "{{base_url}}/api/login", "host": ["{{base_url}}"], "path": ["api", "login"] },
+        "description": "Inicia sesión y guarda el token en la variable {{token}} automáticamente."
+      }
+    },
+    {
+      "name": "1. POST avatar JPG válido (500KB) → 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Caso 1: Esperado 201', () => { pm.response.to.have.status(201); });",
+              "var json = pm.response.json();",
+              "pm.test('Devuelve URL y checksum', () => {",
+              "    pm.expect(json.data).to.have.property('url');",
+              "    pm.expect(json.data).to.have.property('checksum');",
+              "});",
+              "pm.collectionVariables.set('avatar_url', json.data.url);",
+              "console.log('URL avatar:', json.data.url);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": { "mode": "formdata", "formdata": [{ "key": "avatar", "type": "file", "src": "", "description": "foto.jpg (~500KB)" }] },
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Subir foto.jpg (500KB) con token válido.\nEsperado: 201 Created"
+      }
+    },
+    {
+      "name": "2. POST avatar PNG válido (1MB) → 201",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 2: Esperado 201', () => { pm.response.to.have.status(201); });"] }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": { "mode": "formdata", "formdata": [{ "key": "avatar", "type": "file", "src": "", "description": "img.png (~1MB)" }] },
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Subir img.png (1MB) con token válido.\nEsperado: 201 Created"
+      }
+    },
+    {
+      "name": "3. POST avatar .exe → 415",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 3: Esperado 415', () => { pm.response.to.have.status(415); });"] }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": { "mode": "formdata", "formdata": [{ "key": "avatar", "type": "file", "src": "", "description": "virus.exe (~10KB)" }] },
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Subir virus.exe (10KB) con token.\nEsperado: 415 Unsupported Media Type"
+      }
+    },
+    {
+      "name": "4. POST avatar > 2MB → 413",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 4: Esperado 413', () => { pm.response.to.have.status(413); });"] }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": { "mode": "formdata", "formdata": [{ "key": "avatar", "type": "file", "src": "", "description": "grande.mp4 (~5MB)" }] },
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Subir grande.mp4 (5MB) con token.\nEsperado: 413 Payload Too Large"
+      }
+    },
+    {
+      "name": "5. POST avatar sin token → 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 5: Esperado 401', () => { pm.response.to.have.status(401); });"] }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": { "mode": "formdata", "formdata": [{ "key": "avatar", "type": "file", "src": "", "description": "foto.jpg (500KB)" }] },
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Subir foto.jpg SIN token.\nEsperado: 401 Unauthorized"
+      }
+    },
+    {
+      "name": "6. GET avatar existente → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 6: Esperado 200', () => { pm.response.to.have.status(200); });"] }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/avatar/1", "host": ["{{base_url}}"], "path": ["api", "avatar", "1"] },
+        "description": "Obtener avatar del usuario ID 1.\nEsperado: 200 OK con URL del avatar"
+      }
+    },
+    {
+      "name": "7. GET avatar ID inexistente → 404",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 7: Esperado 404', () => { pm.response.to.have.status(404); });"] }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/avatar/9999", "host": ["{{base_url}}"], "path": ["api", "avatar", "9999"] },
+        "description": "Obtener avatar de un usuario que NO existe.\nEsperado: 404 Not Found"
+      }
+    },
+    {
+      "name": "8. POST avatar .php → 415",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 8: Esperado 415', () => { pm.response.to.have.status(415); });"] }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": { "mode": "formdata", "formdata": [{ "key": "avatar", "type": "file", "src": "", "description": "script.php (~1KB)" }] },
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Subir script.php (1KB) con token.\nEsperado: 415 Unsupported Media Type"
+      }
+    },
+    {
+      "name": "9. DELETE avatar autenticado → 200",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 9: Esperado 200', () => { pm.response.to.have.status(200); });"] }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{token}}" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Eliminar avatar con token válido.\nEsperado: 200 OK\n(Primero subir un avatar con caso 1 o 2)"
+      }
+    },
+    {
+      "name": "10. DELETE avatar sin token → 401",
+      "event": [
+        {
+          "listen": "test",
+          "script": { "exec": ["pm.test('Caso 10: Esperado 401', () => { pm.response.to.have.status(401); });"] }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": { "raw": "{{base_url}}/api/avatar", "host": ["{{base_url}}"], "path": ["api", "avatar"] },
+        "description": "Eliminar avatar SIN token.\nEsperado: 401 Unauthorized"
+      }
+    }
+  ]
+}
