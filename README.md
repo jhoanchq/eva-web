@@ -98,6 +98,25 @@ php artisan tinker
 ]);
 ```
 
+### 10. Configurar envío de correo (Mailtrap)
+
+1. Crea una cuenta gratis en https://mailtrap.io
+2. Ve a **Email Testing** → **My Inbox** → copia las credenciales SMTP
+3. Edita tu `.env`:
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=tu_username
+MAIL_PASSWORD=tu_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@eva-web.test"
+MAIL_FROM_NAME="EVA-WEB"
+```
+
+4. Al registrarse un usuario (`POST /api/register`), se envía automáticamente un correo de bienvenida al nuevo usuario.
+
 ---
 
 ## 🚀 Cómo usar
@@ -319,6 +338,7 @@ eva-web/
 | Documentación Laravel 11 | https://laravel.com/docs/11.x |
 | Postman | https://learning.postman.com/ |
 | OWASP File Upload | https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload |
+| Mailtrap (email testing) | https://mailtrap.io |
 
 ---
 

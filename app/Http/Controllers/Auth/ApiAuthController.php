@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\BienvenidoMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 /*
@@ -52,8 +54,16 @@ class ApiAuthController extends Controller
         // Generar token de API
         $token = $user->createToken('auth_token')->plainTextToken;
 
+        // Enviar correo de bienvenida (Mailtrap / SMTP)
+        try {
+            Mail::to($user)->send(new BienvenidoMail($user));
+        } catch (\Exception $e) {
+            // Si el correo falla, no bloquear el registro
+            logger()->warning('Error al enviar correo de bienvenida: ' . $e->getMessage());
+        }
+
         return response()->json([
-            'message' => 'Usuario registrado correctamente',
+            'message' => 'Usuario registrado correctamente. Se envió un correo de bienvenida.',
             'user'  => $user,
             'token' => $token,
         ], 201);
