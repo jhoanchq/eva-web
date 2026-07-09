@@ -1,28 +1,20 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|===========================================================================
-| Semana 10 — Servicios de Transferencia de Archivos
-| Curso: Evaluación y Control de Servicios Web
-|===========================================================================
-| Estas rutas sirven las vistas didácticas del tema.
-| El API REST está definido en routes/api.php
-|===========================================================================
-*/
-
-// Página principal: portada educativa con el flujo de transferencia
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Demo interactivo: upload con validación paso a paso
-Route::get('/demo/upload', function () {
-    return view('demo.upload');
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Demo auth: login/registro para obtener token de API
-Route::get('/demo/auth', function () {
-    return view('demo.auth');
-});
+require __DIR__.'/auth.php';
