@@ -81,7 +81,7 @@
                     <div>
                         <label class="auth-label"><i class="fa-solid fa-key" style="width:1.2em;color:#8be9fd;"></i> Contraseña</label>
                         <div style="position:relative;">
-                            <input type="password" name="password" class="auth-input" id="smtp_password" placeholder="••••••••" style="padding-right:2.5rem;">
+                            <input type="password" name="password" class="auth-input" id="smtp_password" placeholder="Token o contraseña SMTP (soporta texto largo)" style="padding-right:2.5rem;">
                             <button type="button" onclick="togglePassword()" style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);background:none;border:none;color:#6272a4;cursor:pointer;font-size:0.85rem;">
                                 <i class="fa-regular fa-eye" id="eyeIcon"></i>
                             </button>

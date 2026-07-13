@@ -21,7 +21,7 @@ class MailSettingController extends Controller
             'host'         => 'required_if:mailer,smtp|string|max:255',
             'port'         => 'required_if:mailer,smtp|integer|min:1|max:65535',
             'username'     => 'nullable|string|max:255',
-            'password'     => 'nullable|string|max:255',
+            'password'     => 'nullable|string',
             'encryption'   => 'nullable|string|in:tls,ssl,null',
             'from_address' => 'required|email|max:255',
             'from_name'    => 'required|string|max:255',
