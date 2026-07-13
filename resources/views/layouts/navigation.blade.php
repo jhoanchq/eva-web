@@ -10,6 +10,9 @@
                     <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'nav-link-active' : '' }}">
                         <i class="fa-solid fa-gauge-high"></i> Dashboard
                     </a>
+                    <a href="{{ route('admin.mail.settings') }}" class="nav-link {{ request()->routeIs('admin.mail.*') ? 'nav-link-active' : '' }}">
+                        <i class="fa-regular fa-envelope"></i> Correo
+                    </a>
                 </div>
             </div>
 
@@ -55,6 +58,9 @@
         <div class="pt-2 pb-3 space-y-1 px-4">
             <a href="{{ route('dashboard') }}" class="nav-link block py-2 {{ request()->routeIs('dashboard') ? 'nav-link-active' : '' }}">
                 <i class="fa-solid fa-gauge-high"></i> Dashboard
+            </a>
+            <a href="{{ route('admin.mail.settings') }}" class="nav-link block py-2 {{ request()->routeIs('admin.mail.*') ? 'nav-link-active' : '' }}">
+                <i class="fa-regular fa-envelope"></i> Correo
             </a>
         </div>
         <div class="pt-3 pb-2 border-t" style="border-color:rgba(255,255,255,0.06);">
